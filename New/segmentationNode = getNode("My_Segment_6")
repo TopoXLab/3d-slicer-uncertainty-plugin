@@ -1,0 +1,68 @@
+
+
+
+
+
+# Get array voxel coordinates
+import numpy as np
+seg=slicer.util.arrayFromSegmentBinaryLabelmap(segmentationNode, segmentId)
+# numpy array has voxel coordinates in reverse order (KJI instead of IJK)
+# and the array is cropped to minimum size in the segmentation
+mean_KjiCropped = [coords.mean() for coords in np.nonzero(seg)]
+
+# Get segmentation voxel coordinates
+segImage = segmentationNode.GetBinaryLabelmapRepresentation(segmentId)
+segImageExtent = segImage.GetExtent()
+# origin of the array in voxel coordinates is determined by the start extent
+mean_Ijk = [mean_KjiCropped[2], mean_KjiCropped[1], mean_KjiCropped[0]] + np.array([segImageExtent[0], segImageExtent[2], segImageExtent[4]])
+
+# Get segmentation physical coordinates
+ijkToWorld = vtk.vtkMatrix4x4()
+segImage.GetImageToWorldMatrix(ijkToWorld)
+mean_World = [0, 0, 0, 1]
+ijkToRas.MultiplyPoint(np.append(mean_Ijk,1.0), mean_World)
+mean_World = mean_World[0:3]
+
+# If segmentation node is transformed, apply that transform to get RAS coordinates
+transformWorldToRas = vtk.vtkGeneralTransform()
+slicer.vtkMRMLTransformNode.GetTransformBetweenNodes(segmentationNode.GetParentTransformNode(), None, transformWorldToRas)
+mean_Ras = transformWorldToRas.TransformPoint(mean_World)
+
+# Show mean position value and jump to it in all slice viewers
+print(mean_Ras)
+slicer.modules.markups.logic().JumpSlicesToLocation(mean_Ras[0], mean_Ras[1], mean_Ras[2], True)
+
+
+
+
+segmentationNode.GetDisplayNode().SetOpacity(0.2)
+
+pointListNode = getNode("My_markup_My_Segment_188")
+
+pointListNode.GetDisplayNode().SetVisibility(True)
+
+
+segmentationNode = getNode("My_Segment_188")
+# Compute centroids
+import SegmentStatistics
+segStatLogic = SegmentStatistics.SegmentStatisticsLogic()
+segStatLogic.getParameterNode().SetParameter("Segmentation", segmentationNode.GetID())
+segStatLogic.getParameterNode().SetParameter("LabelmapSegmentStatisticsPlugin.centroid_ras.enabled", str(True))
+segStatLogic.computeStatistics()
+stats = segStatLogic.getStatistics()
+
+# Place a markup point in each centroid
+pointListNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsFiducialNode")
+pointListNode.SetName("My_markup_My_Segment_188")
+pointListNode.CreateDefaultDisplayNodes()
+for segmentId in stats["SegmentIDs"]:
+  centroid_ras = stats[segmentId,"LabelmapSegmentStatisticsPlugin.centroid_ras"]
+  segmentName = segmentationNode.GetSegmentation().GetSegment(segmentId).GetName()
+  pointListNode.AddFiducialFromArray(centroid_ras, segmentName)
+
+slicer.modules.markups.logic().JumpSlicesToLocation(centroid_ras[0], centroid_ras[1], centroid_ras[2], True)
+
+
+
+
+
