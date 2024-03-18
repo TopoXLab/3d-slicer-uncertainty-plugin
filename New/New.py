@@ -19,12 +19,44 @@ from slicer import vtkMRMLScalarVolumeNode
 # New
 #
 
+import subprocess
+
+try:
+    import SimpleITK as sitk 
+except ModuleNotFoundError:
+    subprocess.check_call(["pip", "install", "SimpleITK"])
+    import SimpleITK as sitk 
+
+try:
+    import numpy as np
+except ModuleNotFoundError:
+    subprocess.check_call(["pip", "install", "numpy"])
+    import numpy as np
+
+try:
+    import matplotlib.pyplot as plt
+    # import matplotlib
+except ModuleNotFoundError:
+    subprocess.check_call(["pip3", "install", "matplotlib"])
+    import matplotlib.pyplot as plt
+    # import matplotlib
+
+try:
+    import cc3d
+except ModuleNotFoundError:
+    subprocess.check_call(["pip", "install", "connected-components-3d"])
+    import cc3d
+
 import qt
-from PySide2.QtWidgets import QFileDialog
-import SimpleITK as sitk 
-import numpy as np
-import cc3d
-import matplotlib.pyplot as plt
+import SegmentStatistics
+import os
+from pathlib import Path
+import sys
+
+script_dir = Path(__file__).resolve().parent
+parent_dir = Path(script_dir).parent
+saved_dir = Path(parent_dir) / "saved_files/"
+saved_dir.mkdir(parents=True, exist_ok=True)
 
 class New(ScriptedLoadableModule):
     """Uses ScriptedLoadableModule base class, available at:
@@ -154,6 +186,10 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.predict_node = None
         self.colors = None
         self.opaque = None
+
+        self.image_origin = None
+        self.image_spacing = None
+        self.image_direction = None
 
     def setup(self) -> None:
         """
@@ -420,12 +456,27 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 segNode = slicer.util.getNode(self.opaque)
                 segNode.GetDisplayNode().SetOpacity(0.2)
             except Exception as e:
-                print("e:",e)            
+                print("\n\n\n\n\n\n\n\n\n\n\ne:",e)            
                 
         segNode = slicer.util.getNode(segment_name)
         segNode.GetDisplayNode().SetOpacity(1)
         self.opaque = segment_name
 
+        segStatLogic = SegmentStatistics.SegmentStatisticsLogic()
+        segStatLogic.getParameterNode().SetParameter("Segmentation", segNode.GetID())
+        segStatLogic.getParameterNode().SetParameter("LabelmapSegmentStatisticsPlugin.centroid_ras.enabled", str(True))
+        segStatLogic.computeStatistics()
+        stats = segStatLogic.getStatistics()
+
+        # pointListNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsFiducialNode")
+        # pointListNode.SetName("My_markup_My_Segment_188")
+        # pointListNode.CreateDefaultDisplayNodes()
+        for segmentId in stats["SegmentIDs"]:
+          centroid_ras = stats[segmentId,"LabelmapSegmentStatisticsPlugin.centroid_ras"]
+          # segmentName = segNode.GetSegmentation().GetSegment(segmentId).GetName()
+          # pointListNode.AddFiducialFromArray(centroid_ras, segmentName)
+        slicer.modules.markups.logic().JumpSlicesToLocation(centroid_ras[0], centroid_ras[1], centroid_ras[2], True)
+    
     def adjustViewsToBoundingBox(self, bounding_box):
         # Extract the min and max coordinates of the bounding box
         minX, maxX = bounding_box[0].start, bounding_box[0].stop
@@ -474,7 +525,10 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         segNode = slicer.util.getNode(segment_name)
         segNode.GetDisplayNode().SetVisibility(True)
         segNode.GetDisplayNode().SetOpacity(0.2)
-        self.opaque = None
+        if self.opaque == segment_name:
+            self.opaque = None
+        else:
+            print('\n\n\n\n\n in add function', self.opaque, segment_name)
 
         slicer.util.updateVolumeFromArray(self.predict_node, self.predict_node_array)
         self.createDynamicGrid(self.label_values)
@@ -489,7 +543,11 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         nodeToDelete = slicer.util.getNode(segment_name)
         slicer.mrmlScene.RemoveNode(nodeToDelete)
-        self.opaque = None
+
+        if self.opaque == segment_name:
+            self.opaque = None
+        else:
+            print('\n\n\n\n\n in delete function', self.opaque, segment_name)
 
         slicer.util.updateVolumeFromArray(self.predict_node, self.predict_node_array)
         self.createDynamicGrid(self.label_values)
@@ -497,47 +555,71 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     
     def onSaveButtonClicked(self):
         print(f"Save button clicked")
-        with open('/Users/sumedhghavat/SUMEDH/BMI/uncertainty-viz/saves/'+self.predict_node.GetName()+'.npy','wb') as f:
+        with open(str(saved_dir)+self.predict_node.GetName()+'.npy','wb') as f:
             np.save(f,self.predict_node_array)
-        with open('/Users/sumedhghavat/SUMEDH/BMI/uncertainty-viz/saves/'+self.predict_node.GetName()+'_og.npy','wb') as f:
+        with open(str(saved_dir)+self.predict_node.GetName()+'_og.npy','wb') as f:
             np.save(f,self.predict_node_og_array)
-        absolute_difference = np.abs(self.predict_node_array - self.predict_node_og_array)
-        with open('/Users/sumedhghavat/SUMEDH/BMI/uncertainty-viz/saves/'+self.predict_node.GetName()+'_abs.npy','wb') as f:
-            np.save(f,self.absolute_difference)
+        # absolute_difference = np.abs(self.predict_node_array - self.predict_node_og_array)
+        # with open(str(saved_dir)+self.predict_node.GetName()+'_abs.npy','wb') as f:
+        #     np.save(f,self.absolute_difference)
 
         sitk_image_predict_node_array = sitk.GetImageFromArray(self.predict_node_array)
-        sitk_image_predict_node_array.SetOrigin((0.0, 0.0, 0.0))
-        sitk_image_predict_node_array.SetSpacing((0.82421875, 0.82421875, 1.0))
-        sitk_image_predict_node_array.SetDirection((1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0))
-        sitk.WriteImage(sitk_image_predict_node_array,'/Users/sumedhghavat/SUMEDH/BMI/uncertainty-viz/saves/'+self.predict_node.GetName()+'.nii.gz')
+        sitk_image_predict_node_array.SetOrigin(self.image_origin)
+        sitk_image_predict_node_array.SetSpacing(self.image_spacing)
+        sitk_image_predict_node_array.SetDirection(self.image_direction)
+        sitk.WriteImage(sitk_image_predict_node_array,str(saved_dir)+self.predict_node.GetName()+'.nii.gz')
 
         sitk_image_predict_node_og_array = sitk.GetImageFromArray(self.predict_node_og_array)
-        sitk_image_predict_node_og_array.SetOrigin((0.0, 0.0, 0.0))
-        sitk_image_predict_node_og_array.SetSpacing((0.82421875, 0.82421875, 1.0))
-        sitk_image_predict_node_og_array.SetDirection((1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0))
-        sitk.WriteImage(sitk_image_predict_node_og_array,'/Users/sumedhghavat/SUMEDH/BMI/uncertainty-viz/saves/'+self.predict_node.GetName()+'_og.nii.gz')
+        sitk_image_predict_node_og_array.SetOrigin(self.image_origin)
+        sitk_image_predict_node_og_array.SetSpacing(self.image_spacing)
+        sitk_image_predict_node_og_array.SetDirection(self.image_direction)
+        sitk.WriteImage(sitk_image_predict_node_og_array,str(saved_dir)+self.predict_node.GetName()+'_og.nii.gz')
+
+    # def onGenerateMapButtonClicked(self):
+    #     x = Path(__file__).resolve().parent
+    #     print('os.getcwd()',x, Path(x).parent)
+    #     raise Exception("This is a custom error message.")
+
 
     def onGenerateMapButtonClicked(self):
         print("Generate Uncertainty Map button clicked")
-        self.uncertainty_float_node = slicer.util.getNode('uncertainty_float_PA_000056')
+        try:
+            self.uncertainty_float_node = slicer.util.getNode('*uncertainty_file*')
+            self.predict_node = slicer.util.getNode('*segmentation_file*')
+        except Exception as e:
+            raise Exception("ERROR: uncertainty file and segmentation file not found. Exception: {}".format(str(e)))
+
         uncertainty_float_node_array = slicer.util.arrayFromVolume(self.uncertainty_float_node)
-        self.predict_node = slicer.util.getNode('*sota*')
+
         predict_array = slicer.util.arrayFromVolume(self.predict_node)
         self.predict_node_array = np.copy(predict_array)
         self.predict_node_og_array = np.copy(predict_array)
 
+
+        uncertainty_storage_node = self.uncertainty_float_node.GetStorageNode()
+        if uncertainty_storage_node:
+            uncertainty_file_path = uncertainty_storage_node.GetFileName()
+            sitkimage = sitk.ReadImage(uncertainty_file_path)
+        else:
+            raise Exception("ERROR: uncertainty file storage node not found.")
+
+
+        self.image_origin = sitkimage.GetOrigin()
+        self.image_spacing = sitkimage.GetSpacing()
+        self.image_direction = sitkimage.GetDirection()
+
         labels_out, N = cc3d.connected_components(uncertainty_float_node_array, return_N=True)
         stats = cc3d.statistics(labels_out)
-        print(stats.keys())
+        # print(stats.keys())
         # print(len(stats['bounding_boxes']))
         # print(stats['bounding_boxes'][0])
         voxel_counts = stats['voxel_counts']
         bounding_boxes = stats['bounding_boxes']
         centroids = stats['centroids']
         uncertainties = []
-        with open('/Users/sumedhghavat/SUMEDH/BMI/uncertainty-viz/saves/labels_out.npy','wb') as f:
-            np.save(f,labels_out)
-        print("print",len(voxel_counts),N,len(bounding_boxes),len(centroids))
+        # with open(str(saved_dir) + 'labels_out.npy','wb') as f:
+        #     np.save(f,labels_out)
+        # print("print",len(voxel_counts),N,len(bounding_boxes),len(centroids))
 
 
         for i in range(1, N+1):
@@ -594,6 +676,7 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         values = np.linspace(0, 1, num_colors)
         self.colors = plt.cm.coolwarm(values)
         self.colors = self.colors[:,:3]
+        self.colors = self.colors[::-1, :]
 
         # print("\n\n\n\n\n\n",len(colors),len(uncertainties))
 
@@ -606,13 +689,23 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             # slicer - ras
             # https://discourse.slicer.org/t/converting-fiducial-coordinates-from-ras-to-lps/9707
 
-            # labelmapNode.SetOrigin((0.0, 0.0, 0.0))
-            # labelmapNode.SetOrigin((-214.587890625, -366.587890625, -135.5)) got from simpleitk
-            labelmapNode.SetOrigin((214.587890625, 366.587890625, -135.5))
-            labelmapNode.SetSpacing((0.82421875, 0.82421875, 1.0))
-            # imageDirections = [[1,0,0], [0,-1,0], [0,0,-1]]
-            # imageDirections = [[1,0,0], [0,1,0], [0,0,1]]  got from simpleitk
-            imageDirections = [[-1,0,0], [0,-1,0], [0,0,1]]
+            # # labelmapNode.SetOrigin((0.0, 0.0, 0.0))
+            # # labelmapNode.SetOrigin((-214.587890625, -366.587890625, -135.5)) got from simpleitk
+            # # LPS<->RAS conversion is just inverting the sign of the first two coordinates
+            # labelmapNode.SetOrigin((214.587890625, 366.587890625, -135.5))
+            # labelmapNode.SetSpacing((0.82421875, 0.82421875, 1.0))
+            # # imageDirections = [[1,0,0], [0,-1,0], [0,0,-1]]
+            # # imageDirections = [[1,0,0], [0,1,0], [0,0,1]]  got from simpleitk
+            # imageDirections = [[-1,0,0], [0,-1,0], [0,0,1]]
+            # labelmapNode.SetIJKToRASDirections(imageDirections)
+
+
+            labelmapNode.SetOrigin((-self.image_origin[0], -self.image_origin[1], self.image_origin[2]))
+            labelmapNode.SetSpacing(self.image_spacing)
+            dir_x = list(map(lambda a: a*-1 if a != 0.0 else a, list(self.image_direction[:3]))) 
+            dir_y = list(map(lambda a: a*-1 if a != 0.0 else a, list(self.image_direction[3:6]))) 
+            dir_z = list(self.image_direction[6:9])
+            imageDirections = [dir_x, dir_y, dir_z]
             labelmapNode.SetIJKToRASDirections(imageDirections)
 
             component_mask = (labels_out == uncertainty[0]).astype(np.uint8)

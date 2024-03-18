@@ -43,6 +43,7 @@ pointListNode.GetDisplayNode().SetVisibility(True)
 
 
 segmentationNode = getNode("My_Segment_188")
+segmentationNode.GetDisplayNode().SetOpacity(1)
 # Compute centroids
 import SegmentStatistics
 segStatLogic = SegmentStatistics.SegmentStatisticsLogic()
@@ -61,8 +62,3 @@ for segmentId in stats["SegmentIDs"]:
   pointListNode.AddFiducialFromArray(centroid_ras, segmentName)
 
 slicer.modules.markups.logic().JumpSlicesToLocation(centroid_ras[0], centroid_ras[1], centroid_ras[2], True)
-
-
-
-
-
