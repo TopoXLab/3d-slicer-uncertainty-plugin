@@ -19,32 +19,32 @@ from slicer import vtkMRMLScalarVolumeNode
 # New
 #
 
-import subprocess
+import pip
 
 try:
     import SimpleITK as sitk 
 except ModuleNotFoundError:
-    subprocess.check_call(["pip", "install", "SimpleITK"])
+    pip.main(["install", "SimpleITK"])
     import SimpleITK as sitk 
 
 try:
     import numpy as np
 except ModuleNotFoundError:
-    subprocess.check_call(["pip", "install", "numpy"])
+    pip.main(["install", "numpy"])
     import numpy as np
 
 try:
     import matplotlib.pyplot as plt
     # import matplotlib
 except ModuleNotFoundError:
-    subprocess.check_call(["pip3", "install", "matplotlib"])
+    pip.main(["install", "matplotlib"])
     import matplotlib.pyplot as plt
     # import matplotlib
 
 try:
     import cc3d
 except ModuleNotFoundError:
-    subprocess.check_call(["pip", "install", "connected-components-3d"])
+    pip.main(["install", "connected-components-3d"])
     import cc3d
 
 import qt
