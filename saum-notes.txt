@@ -1,0 +1,6 @@
+in New.py
+
+my_label = qt.QLabel("Uncertainty: {} ({}) ({})".format(label_value,voxel_count,label) , container_widget)
+
+
+The "view" functionality for the 4th view (3d render) only works when the 4th view is full screen
