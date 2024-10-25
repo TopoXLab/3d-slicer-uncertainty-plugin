@@ -191,6 +191,8 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.image_spacing = None
         self.image_direction = None
 
+        self.opacity_value = 0.1
+
     def setup(self) -> None:
         """
         Called when the user opens the module the first time and the widget is initialized.
@@ -454,13 +456,15 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         if self.opaque:
             try:
                 segNode = slicer.util.getNode(self.opaque)
-                segNode.GetDisplayNode().SetOpacity(0.2)
+                segNode.GetDisplayNode().SetOpacity(self.opacity_value)
             except Exception as e:
-                print("\n\n\n\n\n\n\n\n\n\n\ne:",e)            
+                print("\n\n\nTrying to set prev segment to low visibility. Error: ",e)            
                 
+        print("\n\n\nAttempting in setting existing segment to high visibility")
         segNode = slicer.util.getNode(segment_name)
         segNode.GetDisplayNode().SetOpacity(1)
         self.opaque = segment_name
+        print("\n\n\nSuccessful in setting existing segment to high visibility")  
 
         segStatLogic = SegmentStatistics.SegmentStatisticsLogic()
         segStatLogic.getParameterNode().SetParameter("Segmentation", segNode.GetID())
@@ -524,7 +528,7 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         segNode = slicer.util.getNode(segment_name)
         segNode.GetDisplayNode().SetVisibility(True)
-        segNode.GetDisplayNode().SetOpacity(0.2)
+        segNode.GetDisplayNode().SetOpacity(self.opacity_value)
         if self.opaque == segment_name:
             self.opaque = None
         else:
@@ -723,7 +727,7 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             # segment.SetColor(self.colors[uncertainty[0]-1])
             segment.SetColor(self.colors[i])
 
-            seg.GetDisplayNode().SetOpacity(0.2)
+            seg.GetDisplayNode().SetOpacity(self.opacity_value)
             # seg.GetDisplayNode().SetOpacity(1)
 
             # if i==50:
