@@ -21,12 +21,16 @@ Now, after the extension and module is loaded successfully, go to Modules > Exam
 
 Before clicking on "Generate Uncertainty Map", make sure you have loaded these 3 files as volumes: 
 
-1) The uncertainty file -> rename this file in the pattern \*uncertainty_file\* before loading
+1) The uncertainty file -> rename this file in the pattern \*uncertainty_file\* before loading -> load as Volume
 
-2) The segmentation file -> rename this file in the pattern \*segmentation_file\* before loading
+2) The segmentation file -> rename this file in the pattern \*segmentation_file\* before loading -> load as Volume
 
 3) The image (for visualization)
 
 Make sure none other files are loaded in slicer in the above pattern
 
 Now you may click on the "Generate Uncertainty Map" button and start working!
+
+The 'View' button for the 4th view (3d render) only works when the 4th view is full screen
+
+Most code is in New.py
