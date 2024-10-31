@@ -21,7 +21,7 @@ Now, after the extension and module is loaded successfully, go to Modules > Exam
 
 Before clicking on "Generate Uncertainty Map", make sure you have loaded these 3 files as volumes: 
 
-1) The uncertainty file -> rename this file in the pattern \*uncertainty_file\* before loading -> load as Volume
+1) The uncertainty file -> rename this file in the pattern \*uncertainty_file\* before loading -> load as Volume; load the float vol, not the int one
 
 2) The segmentation file -> rename this file in the pattern \*segmentation_file\* before loading -> load as Volume
 
