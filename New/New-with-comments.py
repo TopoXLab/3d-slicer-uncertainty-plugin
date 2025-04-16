@@ -185,14 +185,16 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.uncertainty_int_node = None
         self.predict_node = None
         self.colors = None
+        #self.used_indices = None # SaumPP
         self.opaque = None
 
         self.image_origin = None
         self.image_spacing = None
         self.image_direction = None
 
-        self.opacity_value = 0.1 
+        self.opacity_value = 0.1 # SaumPP / Prof Chen suggestion. Earlier it was 0.2
         print(f"Setting opacity value as {self.opacity_value}")
+        print(f"Attempting to set Deleted structure's opacity to 0")
 
     def setup(self) -> None:
         """
@@ -228,6 +230,8 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         # Make sure parameter node is initialized (needed for module reload)
         self.initializeParameterNode()
 
+        # label_values = ["0.1", "0.2", "0.3", "0.4", "0.5","0.1", "0.2", "0.3", "0.4", "0.5","0.1", "0.2", "0.3", "0.4", "0.5","0.1", "0.2", "0.3", "0.4", "0.5","0.1", "0.2", "0.3", "0.4", "0.5",]  # Replace with your list of label values
+        # label_values = []
         self.createDynamicGrid(self.label_values)
 
     def createDynamicGrid(self, label_values):
@@ -260,19 +264,35 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         slider.setTickPosition(qt.QSlider.TicksBelow)  # Set tick position
 
         tick_labels = ['0.0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.0']
-
+        # for i, label in enumerate(tick_labels):
+        #     slider.setTickLabel(i * 10, label)
 
         grid_layout.addWidget(slider, 1, 0, 1, 4)
         slider.connect('valueChanged(int)', lambda value: self.onSliderValueChanged(value / 100.0))
 
+        # if label_values:
+        #     print("here")
+        #     slider = qt.QSlider(qt.Qt.Horizontal, container_widget)
+        #     slider.setMinimum(0)
+        #     slider.setMaximum(100)
+        #     slider.setValue(50)
+        #     grid_layout.addWidget(slider, 1, 0, 1, 4)  
+        #     slider.connect('valueChanged(int)', self.onSliderValueChanged)
+
         for row, (label, label_value, voxel_count, bounding_box, segment_name) in enumerate(label_values):
+            #my_label = qt.QLabel("Uncertainty: {} ({}) ({})".format(label_value,voxel_count,label) , container_widget) # SaumPP - removing CC size
             my_label = qt.QLabel(" ID: {} | Uncertainty: {:.4f} | Sz: {}".format(str(label).zfill(3), float(label_value), voxel_count) , container_widget)
+            # my_label.setStyleSheet("background-color: lightblue;")
+            # my_label.setStyleSheet("background-color: rgb({}, {}, {});".format(self.colors[label-1][0]*255, self.colors[label-1][1]*255, self.colors[label-1][2]*255))
             my_label.setStyleSheet("background-color: rgb({}, {}, {});".format(self.colors[row][0]*255, self.colors[row][1]*255, self.colors[row][2]*255))
 
-            # Create three buttons for each row 
+            # Create three buttons for each row # SaumPP - removing label ID
             view_button = qt.QPushButton(f"View", container_widget)
             add_button = qt.QPushButton(f"Add", container_widget)
             delete_button = qt.QPushButton(f"Delete", container_widget)
+            # view_button = qt.QPushButton(f"View {label}", container_widget)
+            # add_button = qt.QPushButton(f"Add {label}", container_widget)
+            # delete_button = qt.QPushButton(f"Delete {label}", container_widget)
 
             # Add buttons and label to the grid layout
             grid_layout.addWidget(my_label, row + 2, 0)
@@ -368,6 +388,10 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     def onSliderValueChanged(self, new_value):
         print("new_value",new_value)
+        # for row, (label, label_value, voxel_count, bounding_box, segment_name) in enumerate(label_values):
+
+        # self.display_label_values = list(filter(lambda x: float(x[1])<=new_value, self.label_values))
+        # unfiltered_values = [x for x in self.label_values if not float(x[1])<=new_value]
 
         filtered_values = []
         # unfiltered_values = []
@@ -382,11 +406,61 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 segNode.GetDisplayNode().SetVisibility(False)
 
         self.display_label_values = filtered_values
+        # self.createDynamicGrid(self.display_label_values)
+        # self.createDynamicGrid(self.label_values)
 
     def onViewButtonClicked(self, row, label, value, bounding_box, segment_name):
         print(f"View button clicked for row {row} label {label} and value: {value} for segment: {segment_name}")
 
-        
+        # # Your bounding box slices
+        # # xSlice, ySlice, zSlice = (slice(0, 331, None), slice(0, 512, None), slice(0, 512, None))
+        # xSlice, ySlice, zSlice = bounding_box[0], bounding_box[1], bounding_box[2]
+
+        # # Calculate the center of each slice
+        # xCenter = self.calculateCenter(xSlice)
+        # yCenter = self.calculateCenter(ySlice)
+        # zCenter = self.calculateCenter(zSlice)
+
+        # # # Calculate the center and extent for each slice
+        # # xCenter, xExtent = self.calculateCenterAndExtent(xSlice)
+        # # yCenter, yExtent = self.calculateCenterAndExtent(ySlice)
+        # # zCenter, zExtent = self.calculateCenterAndExtent(zSlice)
+
+
+        # # Get the slice nodes for Red, Yellow, and Green views
+        # redSlice = slicer.app.layoutManager().sliceWidget("Red").mrmlSliceNode()
+        # yellowSlice = slicer.app.layoutManager().sliceWidget("Yellow").mrmlSliceNode()
+        # greenSlice = slicer.app.layoutManager().sliceWidget("Green").mrmlSliceNode()
+
+
+        # # zoomFactor = 1.0
+        # # redSlice.SetFieldOfView(zExtent * zoomFactor, zExtent * zoomFactor, 1)
+        # # yellowSlice.SetFieldOfView(xExtent * zoomFactor, xExtent * zoomFactor, 1)
+        # # greenSlice.SetFieldOfView(yExtent * zoomFactor, yExtent * zoomFactor, 1)
+
+
+        # # Set the slice offset for each view to center on the bounding box
+        # redSlice.SetSliceOffset(zCenter)
+        # yellowSlice.SetSliceOffset(xCenter)
+        # greenSlice.SetSliceOffset(yCenter)
+
+        # segmentationNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLSegmentationNode")
+        # segmentID = "Segment_12"  # replace with your segment ID
+        # self.zoomToSegment(segmentationNode, segmentID)
+
+
+
+
+
+        # self.adjustViewsToBoundingBox((slice(0, 331, None), slice(0, 512, None), slice(0, 512, None)))
+        # self.adjustViewsToBoundingBox(bounding_box)
+
+
+
+# here
+        # segNode = slicer.util.getNode(segment_name)
+        # segNode.GetDisplayNode().SetVisibility(not bool(segNode.GetDisplayNode().GetVisibility()))
+# till here
         
         if self.opaque:
             try:
@@ -407,8 +481,13 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         segStatLogic.computeStatistics()
         stats = segStatLogic.getStatistics()
 
+        # pointListNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsFiducialNode")
+        # pointListNode.SetName("My_markup_My_Segment_188")
+        # pointListNode.CreateDefaultDisplayNodes()
         for segmentId in stats["SegmentIDs"]:
           centroid_ras = stats[segmentId,"LabelmapSegmentStatisticsPlugin.centroid_ras"]
+          # segmentName = segNode.GetSegmentation().GetSegment(segmentId).GetName()
+          # pointListNode.AddFiducialFromArray(centroid_ras, segmentName)
         slicer.modules.markups.logic().JumpSlicesToLocation(centroid_ras[0], centroid_ras[1], centroid_ras[2], True)
     
     def adjustViewsToBoundingBox(self, bounding_box):
@@ -443,6 +522,10 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         # Update the views
         slicer.app.processEvents()
+
+
+
+
 
 
     def onAddButtonClicked(self, row, label, value, segment_name):
@@ -482,7 +565,8 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         slicer.util.updateVolumeFromArray(self.predict_node, self.predict_node_array)
         self.createDynamicGrid(self.label_values)
 
-        nodeToDelete.GetDisplayNode().SetVisibility(False) # Set visibility to False to hide the segment
+        nodeToDelete.GetDisplayNode().SetVisibility(False)
+        #nodeToDelete.GetDisplayNode().SetOpacity(0.) # Saumya: set opacity to 0 to hide the segment
 
     
     def onSaveButtonClicked(self):
@@ -491,6 +575,9 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             np.save(f,self.predict_node_array)
         with open(str(saved_dir)+self.predict_node.GetName()+'_og.npy','wb') as f:
             np.save(f,self.predict_node_og_array)
+        # absolute_difference = np.abs(self.predict_node_array - self.predict_node_og_array)
+        # with open(str(saved_dir)+self.predict_node.GetName()+'_abs.npy','wb') as f:
+        #     np.save(f,self.absolute_difference)
 
         sitk_image_predict_node_array = sitk.GetImageFromArray(self.predict_node_array)
         sitk_image_predict_node_array.SetOrigin(self.image_origin)
@@ -503,6 +590,11 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         sitk_image_predict_node_og_array.SetSpacing(self.image_spacing)
         sitk_image_predict_node_og_array.SetDirection(self.image_direction)
         sitk.WriteImage(sitk_image_predict_node_og_array,str(saved_dir)+self.predict_node.GetName()+'_og.nii.gz')
+
+    # def onGenerateMapButtonClicked(self):
+    #     x = Path(__file__).resolve().parent
+    #     print('os.getcwd()',x, Path(x).parent)
+    #     raise Exception("This is a custom error message.")
 
 
     def onGenerateMapButtonClicked(self):
@@ -535,33 +627,129 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         labels_out, N = cc3d.connected_components(uncertainty_float_node_array, return_N=True)
         print(f"Found {N} components")
         stats = cc3d.statistics(labels_out)
+        # print(stats.keys())
+        # print(len(stats['bounding_boxes']))
+        # print(stats['bounding_boxes'][0])
         voxel_counts = stats['voxel_counts']
         bounding_boxes = stats['bounding_boxes']
         centroids = stats['centroids']
         uncertainties = []
+        # with open(str(saved_dir) + 'labels_out.npy','wb') as f:
+        #     np.save(f,labels_out)
+        # print("print",len(voxel_counts),N,len(bounding_boxes),len(centroids))
 
 
         for i in range(1, N+1):
             value = uncertainty_float_node_array[labels_out == i][0]
             uncertainties.append((i, str(value), voxel_counts[i], bounding_boxes[i], "My_Segment_"+str(i)))
 
-
+            # if i==50:
+            #     break
+        # uncertainties.sort(key = lambda x: x[2], reverse = True)
         uncertainties.sort(key = lambda x: (float(x[1]), float(x[2])), reverse = True)
+
+        # SaumPP - just to show red-blue range in the first 40 rows
+        # SaumPP - comment
+        # num_colors = N
+        # self.colors = []
+        # values = np.linspace(0, 1, num_colors)
+        # self.colors1 = plt.cm.coolwarm(values)
+        # self.colors1 = self.colors1[:,:3]
+        # self.colors1 = self.colors1[::-1, :]
+        # n = len(uncertainties)
+        # max_val = float(uncertainties[0][1])
+        # min_val = float(uncertainties[-1][1])
+        # result = []
+        # target_step = (max_val - min_val) / 39
+        # curr_target = max_val
+        # self.used_indices = []
+        # for i in range(40):
+        #     best_idx = 0
+        #     best_diff = float('inf')
+        #     for j in range(n):
+        #         if j not in self.used_indices:
+        #             curr_diff = abs(float(uncertainties[j][1]) - curr_target)
+        #             if curr_diff < best_diff:
+        #                 best_diff = curr_diff
+        #                 best_idx = j
+        #     result.append(uncertainties[best_idx])
+        #     self.colors.append(self.colors1[best_idx])
+        #     self.used_indices.append(best_idx)
+        #     curr_target -= target_step
+        # for i in range(n):
+        #     if i not in self.used_indices:
+        #         result.append(uncertainties[i])
+        #         self.colors.append(self.colors1[i])
 
         self.connected_components = labels_out
         self.total_components = N
+        #self.label_values = result # SaumPP    
         self.label_values = uncertainties    
         self.display_label_values = self.label_values
+        # self.createDynamicGrid(self.label_values)
 
+
+
+
+        # labelMapNode = self.createLabelMapVolumeNode()
+        # # print("labelMapNode",labelMapNode)
+        # print("labelMapNode",labelMapNode.GetStorageNode())
+        # # Create a new segmentation node
+        # segmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
+        # segmentationNode.CreateDefaultDisplayNodes()  # for display
+
+        # for label in range(1, N+1):
+        #     binaryLabelMap = np.zeros(self.connected_components.shape, dtype=np.uint8)
+        #     binaryLabelMap[self.connected_components == label] = 1
+
+        #     # Convert the numpy array to a SimpleITK image
+        #     binaryLabelMapSitk = sitk.GetImageFromArray(binaryLabelMap)
+        #     binaryLabelMapSitk.CopyInformation(sitk.ReadImage(labelMapNode.GetStorageNode().GetFileName()))
+
+        #     # Add the binary label map as a new segment
+        #     addedSegmentID = segmentationNode.GetSegmentation().AddEmptySegment(f"My_Segment_{label}")
+        #     slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(binaryLabelMapSitk, segmentationNode, addedSegmentID)
+
+        # Display the segmentation node
+        # slicer.util.setSliceViewerLayers(segmentation=segmentationNode)
+
+
+        # labelMapVolumeNode = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLLabelMapVolumeNode')
+        # slicer.util.updateVolumeFromArray(labelMapVolumeNode, self.connected_components)
+
+
+        
+        # for label in range(1,N+1):
+        #     component_mask = (labels_out == label).astype(np.uint8)
+        #     break
+
+        # SaumPP - uncomment
         num_colors = N
         values = np.linspace(0, 1, num_colors)
         self.colors = plt.cm.coolwarm(values)
         self.colors = self.colors[:,:3]
         self.colors = self.colors[::-1, :]
 
+        # print("\n\n\n\n\n\n",len(colors),len(uncertainties))
+
         for i,uncertainty in enumerate(uncertainties):
+            # print(i)
             labelmapNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
             labelmapNode.SetName("MyUncertaintyComponents_"+str(uncertainty[0]))
+
+            # simpleitk - lps
+            # slicer - ras
+            # https://discourse.slicer.org/t/converting-fiducial-coordinates-from-ras-to-lps/9707
+
+            # # labelmapNode.SetOrigin((0.0, 0.0, 0.0))
+            # # labelmapNode.SetOrigin((-214.587890625, -366.587890625, -135.5)) got from simpleitk
+            # # LPS<->RAS conversion is just inverting the sign of the first two coordinates
+            # labelmapNode.SetOrigin((214.587890625, 366.587890625, -135.5))
+            # labelmapNode.SetSpacing((0.82421875, 0.82421875, 1.0))
+            # # imageDirections = [[1,0,0], [0,-1,0], [0,0,-1]]
+            # # imageDirections = [[1,0,0], [0,1,0], [0,0,1]]  got from simpleitk
+            # imageDirections = [[-1,0,0], [0,-1,0], [0,0,1]]
+            # labelmapNode.SetIJKToRASDirections(imageDirections)
 
 
             labelmapNode.SetOrigin((-self.image_origin[0], -self.image_origin[1], self.image_origin[2]))
@@ -583,10 +771,16 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             slicer.mrmlScene.RemoveNode(labelmapNode)
             segmentation = seg.GetSegmentation()
             segment = segmentation.GetSegment(segmentation.GetNthSegmentID(0))
+            # segment.SetColor(self.colors[i])
+            # segment.SetColor(self.colors[uncertainty[0]-1])
 
             segment.SetColor(self.colors[i])
 
             seg.GetDisplayNode().SetOpacity(self.opacity_value)
+            # seg.GetDisplayNode().SetOpacity(1)
+
+            # if i==50:
+            #     break
 
         self.createDynamicGrid(self.display_label_values)
 
@@ -713,7 +907,7 @@ class NewWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
 
 #
-# Our New Plug-in Logic
+# NewLogic
 #
 
 class NewLogic(ScriptedLoadableModuleLogic):
@@ -840,6 +1034,33 @@ class NewTest(ScriptedLoadableModuleTest):
         self.assertEqual(outputScalarRange[1], inputScalarRange[1])
 
         self.delayDisplay('Test passed')
+
+
+
+
+
+
+
+
+# for component_label in range(1, N + 1):
+
+#     labelmapNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLLabelMapVolumeNode")
+#     labelmapNode.SetName("MyUncertaintyComponents"+str(component_label))
+
+#     labelmapNode.SetOrigin((0.0, 0.0, 0.0))
+#     labelmapNode.SetSpacing((0.82421875, 0.82421875, 1.0))
+#     imageDirections = [[1,0,0], [0,-1,0], [0,0,-1]]
+#     labelmapNode.SetIJKToRASDirections(imageDirections)
+
+#     component_mask = (labels_out == component_label).astype(np.uint8)
+
+#     slicer.util.updateVolumeFromArray(labelmapNode, component_mask)
+
+#     seg = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
+#     slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(labelmapNode, seg)
+#     seg.CreateClosedSurfaceRepresentation()
+#     slicer.mrmlScene.RemoveNode(labelmapNode)
+
 
 
 # https://slicer.readthedocs.io/en/latest/developer_guide/script_repository.html#get-centroid-of-each-segment
