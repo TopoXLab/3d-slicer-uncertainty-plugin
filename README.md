@@ -11,7 +11,7 @@ Check "Enable Developer Mode"
 
 Modules > Developer Tools > Extension Wizard
 
-Select Extension
+Click 'Select Extension'
 
 Select the root folder of this github repository
 
@@ -19,7 +19,7 @@ Select New as the module to load
 
 Now, after the extension and module is loaded successfully, go to Modules > Examples > New
 
-Before clicking on "Generate Uncertainty Map", make sure you have loaded these 3 files as volumes: 
+Before clicking on "Generate Uncertainty Map", make sure you have loaded these 3 files as **Volumes**: 
 
 1) The uncertainty file -> rename this file in the pattern \*uncertainty_file\* before loading
 
