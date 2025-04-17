@@ -34,3 +34,9 @@ Now you may click on the "Generate Uncertainty Map" button and start working!
 The 'View' button for the 4th view (3d render) only works when the 4th view is full screen
 
 Most code is in New.py
+
+## Our 3D Slicer plug-in video demo
+[![Watch the video](https://github.com/sumedh151/3d-slicer-uncertainty-visualizer/blob/main/demo-videos/uncertainty-thumbnail.png)](https://github.com/sumedh151/3d-slicer-uncertainty-visualizer/blob/main/demo-videos/unc-w-text.mp4)
+
+## 3D Slicer standard proof-reading tools' video demo
+[![Watch the video](https://github.com/sumedh151/3d-slicer-uncertainty-visualizer/blob/main/demo-videos/default-thumbnail.png)](https://github.com/sumedh151/3d-slicer-uncertainty-visualizer/blob/main/demo-videos/default-w-text.mp4)
