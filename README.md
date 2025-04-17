@@ -35,9 +35,11 @@ The 'View' button for the 4th view (3d render) only works when the 4th view is f
 
 Most code is in New.py
 
-## Our 3D Slicer plug-in video demo
-[![Watch the video](demo-videos/uncertainty-thumbnail.png)](demo-videos/unc-w-text.mp4?raw=true)
+## [YouTube] Our 3D Slicer plug-in video demo
+[![Watch on YouTube](https://img.youtube.com/vi/T6TwGzzrnqU/hqdefault.jpg)](https://www.youtube.com/watch?v=T6TwGzzrnqU)
 
-## 3D Slicer standard proof-reading tools' video demo
-[![Watch the video](demo-videos/default-thumbnail.png)](demo-videos/default-w-text.mp4?raw=true)
+
+## [YouTube] 3D Slicer standard proof-reading tools' video demo
+[![Watch on YouTube](https://img.youtube.com/vi/swo6hOapTFM/hqdefault.jpg)](https://www.youtube.com/watch?v=swo6hOapTFM)
+
 
