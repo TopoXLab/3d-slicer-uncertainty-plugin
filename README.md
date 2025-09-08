@@ -1,45 +1,63 @@
-# 3d-slicer-uncertainty-visualizer
-3D Slicer module for visualizing connected components along with the entire volume with functionalities of adding, deleting and viewing the individual components based on their uncertainty value.
+# 3D Slicer Uncertainty Visualizer
 
-Steps to use this module:
+A 3D Slicer module for visualizing structure-wise uncertainty of vessels segmented by a deep learning model. The functionality involves adding, deleting, and viewing individual components based on their uncertainty values.
 
-Clone this github repository
+## Installation and Setup
 
-Slicer menu: Edit > Application Settings > Developer
+### Prerequisites
+- 3D Slicer installed on your system
 
-Check "Enable Developer Mode"
+### Installation Steps
 
-Modules > Developer Tools > Extension Wizard
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/3d-slicer-uncertainty-visualizer.git
+   ```
 
-Click 'Select Extension'
+2. **Enable Developer Mode**
+   - Go to **Slicer menu** → **Edit** → **Application Settings** → **Developer**
+   - Check **"Enable Developer Mode"**
 
-Select the root folder of this github repository
+3. **Load the Extension**
+   - Navigate to **Modules** → **Developer Tools** → **Extension Wizard**
+   - Click **'Select Extension'**
+   - Select the root folder of this GitHub repository
+   - Select **New** as the module to load
 
-Select New as the module to load
+4. **Access the Module**
+   - Once the extension and module load successfully, go to **Modules** → **Examples** → **New**
 
-Now, after the extension and module is loaded successfully, go to Modules > Examples > New
+## Usage Instructions
 
-Before clicking on "Generate Uncertainty Map", make sure you have loaded these 3 files as **Volumes**: 
+### Required Files
+Before clicking **"Generate Uncertainty Map"**, ensure you have loaded these 3 files as **Volumes**:
 
-1) The uncertainty file -> rename this file in the pattern \*uncertainty_file\* before loading -> load as Volume; load the float vol, not the int one
+1. **Uncertainty File**
+   - Rename this file following the pattern: `*uncertainty_file*` before loading
+   - Load as Volume (use the float volume, not the int version)
 
-2) The segmentation file -> rename this file in the pattern \*segmentation_file\* before loading -> load as Volume
+2. **Segmentation File** 
+   - Rename this file following the pattern: `*segmentation_file*` before loading
+   - Load as Volume
 
-3) The image (for visualization)
+3. **Image File**
+   - Load for visualization purposes
 
-Make sure none other files are loaded in slicer in the above pattern
+> **Important:** Make sure no other files are loaded in Slicer that follow the above naming patterns.
 
-Now you may click on the "Generate Uncertainty Map" button and start working!
+### Getting Started
+1. Click the **"Generate Uncertainty Map"** button to begin working
+2. The **'View'** button for the 4th view (3D render) only works when the 4th view is in full screen mode
 
-The 'View' button for the 4th view (3d render) only works when the 4th view is full screen
+## Development Notes
+- Most of the code is located in `New.py`
 
-Most code is in New.py
+## Video Demonstrations
 
-## [YouTube] Our 3D Slicer plug-in video demo
+### [YouTube] Our 3D Slicer plug-in video demo
 [![Watch on YouTube](https://img.youtube.com/vi/T6TwGzzrnqU/hqdefault.jpg)](https://www.youtube.com/watch?v=T6TwGzzrnqU)
 
-
-## [YouTube] 3D Slicer standard proof-reading tools' video demo
+### [YouTube] 3D Slicer standard proof-reading tools' video demo
 [![Watch on YouTube](https://img.youtube.com/vi/swo6hOapTFM/hqdefault.jpg)](https://www.youtube.com/watch?v=swo6hOapTFM)
 
 
