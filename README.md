@@ -55,9 +55,9 @@ Before clicking **"Generate Uncertainty Map"**, ensure you have loaded these 3 f
 ## Video Demonstrations
 
 ### [YouTube] Our 3D Slicer plug-in video demo
-[![Watch on YouTube](https://youtu.be/PB7xBGxw5iU)
+[![Watch on YouTube](https://img.youtube.com/vi/PB7xBGxw5iU/hqdefault.jpg)](https://youtu.be/PB7xBGxw5iU)
 
 ### [YouTube] 3D Slicer standard proof-reading tools' video demo
-[![Watch on YouTube](https://youtu.be/MJFCrtKqvK8)
+[![Watch on YouTube](https://img.youtube.com/vi/MJFCrtKqvK8/hqdefault.jpg)](https://youtu.be/MJFCrtKqvK8)
 
 
