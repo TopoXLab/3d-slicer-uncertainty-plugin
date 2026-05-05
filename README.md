@@ -60,4 +60,6 @@ Before clicking **"Generate Uncertainty Map"**, ensure you have loaded these 3 f
 ### [YouTube] 3D Slicer standard proof-reading tools' video demo
 [![Watch on YouTube](https://img.youtube.com/vi/MJFCrtKqvK8/hqdefault.jpg)](https://youtu.be/MJFCrtKqvK8)
 
-
+## Related repositories:
+- Official 2D: https://github.com/Saumya-Gupta-26/struct-uncertainty.git
+- Official 3D: https://github.com/Saumya-Gupta-26/struct-uncertainty-3D.git
